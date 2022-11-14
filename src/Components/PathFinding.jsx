@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Node from './Node/Node';
-import {dijkstra, getNodesInShortestPathOrder} from '../Algorithms/Dijkstra';
+import {visualize} from '../Utility/visualize'
+
 import {getInitialGrid, getNewGridWithWallToggled} from '../Utility/grid'
 
 import '../App/App.css';
@@ -52,48 +53,16 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
-  animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
-    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-      if (i === visitedNodesInOrder.length) {
-        setTimeout(() => {
-          this.animateShortestPath(nodesInShortestPathOrder);
-        }, 10 * i);
-        return;
-      }
-      setTimeout(() => {
-        const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
-      }, 10 * i);
-    }
-  }
-
-  animateShortestPath(nodesInShortestPathOrder) {
-    for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
-      setTimeout(() => {
-        const node = nodesInShortestPathOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-shortest-path';
-      }, 50 * i);
-    }
-  }
-
-  visualizeDijkstra() {
-    const {grid, startNode, finishNode} = this.state;
-    const sNode = grid[startNode[0]][startNode[1]];
-    const fNode = grid[finishNode[0]][finishNode[1]];
-    const visitedNodesInOrder = dijkstra(grid, sNode, fNode);
-    const nodesInShortestPathOrder = getNodesInShortestPathOrder(fNode);
-    this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
-  }
-
   render() {
     const {grid, mouseIsPressed} = this.state;
-
+    // options are - greedyBfs, dijkstra
     return (
       <>
-        <button onClick={() => this.visualizeDijkstra()}>
+        <button onClick={() => visualize('dijkstra', this.state)}>
           Visualize Dijkstra's Algorithm
+        </button>
+        <button onClick={() => visualize('greedyBfs', this.state)}>
+          Visualize Greedy BFS Algorithm
         </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {
