@@ -1,8 +1,8 @@
 import Heap from 'heap';
 
-export function greedybfs(grid, startNode, finishNode){
+export function astar(grid, startNode, finishNode){
     const visitedNodesInOrder = []; // we will store the nodes visited in greedy bfs traversal order
-    startNode.distance = calculate_heuristic(startNode, finishNode);
+    startNode.distance = 0;
     const unvisitedNodes = getAllNodes(grid); // return a heap
 
     while(!unvisitedNodes.empty()) {
@@ -40,7 +40,7 @@ function updateDistanceOfUnvisitedNeighbors(node, grid, goalNode) {
     const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
     // Update heuristic distance of neighbouring nodes.
     for (const neighbor of unvisitedNeighbors) {
-      neighbor.distance = calculate_heuristic(neighbor, goalNode)
+      neighbor.distance = node.distance + 1 + calculate_heuristic(neighbor, goalNode)
       neighbor.previousNode = node;
     }
 

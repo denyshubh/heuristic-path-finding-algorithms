@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import Node from './Node/Node';
 import {visualize} from '../Utility/visualize'
-
 import {getInitialGrid, getNewGridWithWallToggled} from '../Utility/grid'
 
 import '../App/App.css';
@@ -63,6 +62,9 @@ export default class PathfindingVisualizer extends Component {
         </button>
         <button onClick={() => visualize('greedyBfs', this.state)}>
           Visualize Greedy BFS Algorithm
+        </button>
+        <button onClick={() => visualize('astar', this.state)}>
+          Visualize Astar Algorithm
         </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {

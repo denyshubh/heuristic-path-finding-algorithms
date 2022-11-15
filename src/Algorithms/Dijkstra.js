@@ -1,14 +1,13 @@
-// Performs Dijkstra's algorithm; returns *all* nodes in the order
-// in which they were visited. Also makes nodes point back to their
-// previous node, effectively allowing us to compute the shortest path
-// by backtracking from the finish node.
+import Heap from 'heap';
+
 export function dijkstra(grid, startNode, finishNode) {
     const visitedNodesInOrder = [];
     startNode.distance = 0;
     const unvisitedNodes = getAllNodes(grid);
-    while (!!unvisitedNodes.length) {
-      sortNodesByDistance(unvisitedNodes);
-      const closestNode = unvisitedNodes.shift();
+    while (!unvisitedNodes.empty()) {
+      console.log('h')
+      unvisitedNodes.heapify()
+      const closestNode = unvisitedNodes.pop();
       // If we encounter a wall, we skip it.
       if (closestNode.isWall) continue;
       // If the closest node is at a distance of infinity,
@@ -17,15 +16,11 @@ export function dijkstra(grid, startNode, finishNode) {
       closestNode.isVisited = true;
       visitedNodesInOrder.push(closestNode);
       if (closestNode === finishNode) return visitedNodesInOrder;
-      updateUnvisitedNeighbors(closestNode, grid);
+      updateDistanceOfUnvisitedNeighbors(closestNode, grid);
     }
   }
-  
-  function sortNodesByDistance(unvisitedNodes) {
-    unvisitedNodes.sort((nodeA, nodeB) => nodeA.distance - nodeB.distance);
-  }
-  
-  function updateUnvisitedNeighbors(node, grid) {
+
+  function updateDistanceOfUnvisitedNeighbors(node, grid) {
     const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
     for (const neighbor of unvisitedNeighbors) {
       neighbor.distance = node.distance + 1;
@@ -44,11 +39,11 @@ export function dijkstra(grid, startNode, finishNode) {
   }
   
   function getAllNodes(grid) {
-    const nodes = [];
+    let heap = new Heap((nodeA, nodeB) => nodeA.distance - nodeB.distance);
     for (const row of grid) {
       for (const node of row) {
-        nodes.push(node);
+        heap.push(node);
       }
     }
-    return nodes;
-  }
+    return heap;
+}

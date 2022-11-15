@@ -4,7 +4,9 @@ import PathfindingVisualizer from '../Components/PathFinding';
 function App() {
   return (
     <div className="App">
-     <PathfindingVisualizer></PathfindingVisualizer>
+     <PathfindingVisualizer 
+           algo={'greedyBfs'}
+     />
     </div>
   );
 }
