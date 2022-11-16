@@ -2,6 +2,8 @@ import { greedybfs } from "../Algorithms/GreedyBfs"
 import {getNodesInShortestPathOrder} from "../Algorithms/NodePathTrace"
 import {dijkstra } from '../Algorithms/Dijkstra';
 import {astar} from '../Algorithms/Astar'
+import { bfs } from "../Algorithms/Bfs";
+import { dfs } from "../Algorithms/Dfs";
 
 const animate = (visitedNodesInOrder, nodesInShortestPathOrder) => {
     for (let i = 0; i <= visitedNodesInOrder.length; i++) {
@@ -47,6 +49,13 @@ export const visualize = (options, currentState) => {
         case 'astar':
             visitedNodesInOrder = astar(grid, sNode, fNode);
             break
+        case 'bfs':
+            visitedNodesInOrder = bfs(grid, sNode, fNode)
+            break  
+        case 'dfs':
+          visitedNodesInOrder = dfs(grid, sNode, fNode)
+          break
+
         default:
             visitedNodesInOrder = []
 

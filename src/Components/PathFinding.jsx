@@ -5,8 +5,8 @@ import {getInitialGrid, getNewGridWithWallToggled} from '../Utility/grid'
 
 import '../App/App.css';
 
-const TOTAL_ROWS = 15
-const TOTAL_COLS = 30
+const TOTAL_ROWS = 20
+const TOTAL_COLS = 50
 
 export default class PathfindingVisualizer extends Component {
   constructor() {
@@ -24,6 +24,11 @@ export default class PathfindingVisualizer extends Component {
   componentDidMount() {
     const grid = getInitialGrid(TOTAL_ROWS, TOTAL_COLS, this.state.startNode, this.state.finishNode);
     this.setState({grid});
+    console.log("component di mount")
+  }
+
+  componentWillUnmount() {
+    console.log("Component Unmount Called")
   }
 
   handleMouseDown(row, col) {
@@ -52,19 +57,27 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
+  handleButtonClick(algo) {
+    visualize(algo, this.state)
+  }
   render() {
     const {grid, mouseIsPressed} = this.state;
-    // options are - greedyBfs, dijkstra
     return (
       <>
-        <button onClick={() => visualize('dijkstra', this.state)}>
+        <button onClick={() => this.handleButtonClick('dijkstra')}>
           Visualize Dijkstra's Algorithm
         </button>
-        <button onClick={() => visualize('greedyBfs', this.state)}>
+        <button onClick={() => this.handleButtonClick('greedyBfs')}>
           Visualize Greedy BFS Algorithm
         </button>
-        <button onClick={() => visualize('astar', this.state)}>
+        <button onClick={() => this.handleButtonClick('astar')}>
           Visualize Astar Algorithm
+        </button>
+        <button onClick={() => this.handleButtonClick('bfs')}>
+          Visualize BFS Algorithm
+        </button>
+        <button onClick={() => this.handleButtonClick('dfs')}>
+          Visualize DFS Algorithm
         </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {

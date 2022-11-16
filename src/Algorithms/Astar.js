@@ -30,11 +30,23 @@ export function astar(grid, startNode, finishNode){
 function calculate_heuristic(currentNode, goalNode) {
     // The heuristic here is the Manhattan Distance
     // Could elaborate to offer more than one choice
+
     let dx = Math.abs(currentNode.row - goalNode.row)
     let dy = Math.abs(currentNode.col - goalNode.col)
 
     return dx+dy
 }
+
+// function heuristic(currentNode, goalNode) {
+//   // allowed diagonal movement
+//   const D = 1
+//   const D2 = 1
+//   let dx = Math.abs(currentNode.row - goalNode.row)
+//   let dy = Math.abs(currentNode.col - goalNode.col)
+//   // When D = 1 and D2 = 1, this is called the Chebyshev distance. 
+//   // When D = 1 and D2 = sqrt(2), this is called the octile distance.
+//   return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy)
+// }
 
 function updateDistanceOfUnvisitedNeighbors(node, grid, goalNode) {
     const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
@@ -45,20 +57,27 @@ function updateDistanceOfUnvisitedNeighbors(node, grid, goalNode) {
     }
 
   }
+function isValid(ROW, COL, row, col){
+    // If cell lies out of bounds
+    if (row < 0 || col < 0
+        || row >= ROW || col >= COL)
+        return false;
+    
+    // validate if the node is visited here itself
+    // Otherwise
+    return true;
+}
 
 function getUnvisitedNeighbors(node, grid) {
     // returns the list of neighbours of current node
     const neighbors = [];
     const {col, row} = node;
 
-    // const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-    // delta.forEach((x, y) => neighbors.push(grid[row-x][col-y]))
-    // up, left, down, right
-    if (row > 0) neighbors.push(grid[row - 1][col]);
-    if (row < grid.length - 1) neighbors.push(grid[row + 1][col]);
-    if (col > 0) neighbors.push(grid[row][col - 1]);
-    if (col < grid[0].length - 1) neighbors.push(grid[row][col + 1]);
-
+     // up, left, down, right
+     const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+     delta.forEach((ele, _) => {
+       if(isValid(grid.length, grid[0].length, row-ele[0], col-ele[1])) neighbors.push(grid[row-ele[0]][col-ele[1]])
+     })
     return neighbors.filter(neighbor => !neighbor.isVisited);
 }
 

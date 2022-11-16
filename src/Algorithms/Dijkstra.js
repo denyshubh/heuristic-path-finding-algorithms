@@ -27,14 +27,24 @@ export function dijkstra(grid, startNode, finishNode) {
       neighbor.previousNode = node;
     }
   }
+
+function isValid(ROW, COL, row, col){
+    // If cell lies out of bounds
+    if (row < 0 || col < 0
+        || row >= ROW || col >= COL)
+        return false;
+    // Otherwise
+    return true;
+}
   
   function getUnvisitedNeighbors(node, grid) {
     const neighbors = [];
     const {col, row} = node;
-    if (row > 0) neighbors.push(grid[row - 1][col]);
-    if (row < grid.length - 1) neighbors.push(grid[row + 1][col]);
-    if (col > 0) neighbors.push(grid[row][col - 1]);
-    if (col < grid[0].length - 1) neighbors.push(grid[row][col + 1]);
+    // up, left, down, right
+    const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    delta.forEach((ele, _) => {
+      if(isValid(grid.length, grid[0].length, row-ele[0], col-ele[1])) neighbors.push(grid[row-ele[0]][col-ele[1]])
+    })
     return neighbors.filter(neighbor => !neighbor.isVisited);
   }
   
