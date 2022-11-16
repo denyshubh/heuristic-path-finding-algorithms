@@ -18,7 +18,9 @@ export function bfs(grid, startNode, finishNode){
         const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
         delta.forEach((ele, index) => {
           if(isValid(visited, grid.length, grid[0].length, row+ele[0], col+ele[1])) {
-            queue.push(grid[row+ele[0]][col+ele[1]])
+            const childNode = grid[row+ele[0]][col+ele[1]]
+            childNode.previousNode = node
+            queue.push(childNode)
             visited[row+ele[0]][col+ele[1]] = true
           } 
         })
