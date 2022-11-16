@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import Node from './Node/Node';
 import {visualize} from '../Utility/visualize'
 import {getInitialGrid, getNewGridWithWallToggled} from '../Utility/grid'
-
+import {Button} from 'react-bootstrap';
 import '../App/App.css';
 
 const TOTAL_ROWS = 20
@@ -24,13 +24,8 @@ export default class PathfindingVisualizer extends Component {
   componentDidMount() {
     const grid = getInitialGrid(TOTAL_ROWS, TOTAL_COLS, this.state.startNode, this.state.finishNode);
     this.setState({grid});
-    console.log("component di mount")
   }
-
-  componentWillUnmount() {
-    console.log("Component Unmount Called")
-  }
-
+  
   handleMouseDown(row, col) {
     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
     this.setState({grid: newGrid, mouseIsPressed: true});
@@ -58,27 +53,18 @@ export default class PathfindingVisualizer extends Component {
   }
 
   handleButtonClick(algo) {
-    visualize(algo, this.state)
+    if(algo)
+      visualize(algo, this.state)
   }
   render() {
     const {grid, mouseIsPressed} = this.state;
     return (
-      <>
-        <button onClick={() => this.handleButtonClick('dijkstra')}>
-          Visualize Dijkstra's Algorithm
-        </button>
-        <button onClick={() => this.handleButtonClick('greedyBfs')}>
-          Visualize Greedy BFS Algorithm
-        </button>
-        <button onClick={() => this.handleButtonClick('astar')}>
-          Visualize Astar Algorithm
-        </button>
-        <button onClick={() => this.handleButtonClick('bfs')}>
-          Visualize BFS Algorithm
-        </button>
-        <button onClick={() => this.handleButtonClick('dfs')}>
-          Visualize DFS Algorithm
-        </button>
+      <div className="App">
+        <Button variant="outline-primary" 
+          onClick={() => this.handleButtonClick(this.props.algo)}>
+            Start
+        </Button>
+      
         <div className="grid">
           {grid.map((row, rowIdx) => {
             return (
@@ -106,7 +92,7 @@ export default class PathfindingVisualizer extends Component {
             );
           })}
         </div>
-      </>
+      </div>
     );
   }
 }
