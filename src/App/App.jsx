@@ -6,6 +6,7 @@ import {
 
 import PathfindingVisualizer from '../Components/PathFinding';
 import NavBar from '../Components/NavBar';
+import Canvas from "../Components/Canvas";
 import './App.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <Router>
         <NavBar />
         <Routes>
+          <Route path='/rrt' element={<Canvas algo={'rrt'}/>} />
           <Route path='/astar' element={<PathfindingVisualizer algo={'astar'}/>} />
           <Route path='/bfs' element={<PathfindingVisualizer algo={'bfs'}/>} />
           <Route path='/dfs' element={<PathfindingVisualizer algo={'dfs'}/>} />

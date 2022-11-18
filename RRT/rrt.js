@@ -27,7 +27,7 @@ export class RRTAlgorithm{
 	
 	//add the node to the nearest node, and add goal if necessary  
 	addChild(locationX, locationY){
-		if (locationX == this.goal.locationX){
+		if (locationX === this.goal.locationX){
 			this.nearestNode.children.push(this.goal);
 			this.goal.parent = this.nearestNode;
 			this.pathFound = true;
@@ -74,7 +74,7 @@ export class RRTAlgorithm{
 			if (testPoint[1] <= 0){
 				testPoint[1] = 0;
 			}			
-			if (this.grid[Math.round(testPoint[1])][Math.round(testPoint[0])] == 1){
+			if (this.grid[Math.round(testPoint[1])][Math.round(testPoint[0])] === 1){
 				return true;
 			}
 		}
@@ -131,7 +131,7 @@ export class RRTAlgorithm{
 
 	//retrace path from goal to start
     retraceRRTPath(goal){
-        if (goal.locationX == this.randomTree.locationX){
+        if (goal.locationX === this.randomTree.locationX){
 			var start = [this.randomTree.locationX, this.randomTree.locationY];
 			this.Waypoints.push(start);
 			this.Waypoints.push(start);

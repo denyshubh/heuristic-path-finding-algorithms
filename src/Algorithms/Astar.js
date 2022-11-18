@@ -25,38 +25,31 @@ export function astar(grid, startNode, finishNode){
         updateDistanceOfUnvisitedNeighbors(closestNode, grid, finishNode);
     }
 }
-// distance between two points in 2D space.
-// sqrt( (x2 - x)^2 + (y2-y)^2 )
-function calculate_heuristic(currentNode, goalNode) {
-    // The heuristic here is the Manhattan Distance
-    // Could elaborate to offer more than one choice
 
-    let dx = Math.abs(currentNode.row - goalNode.row)
-    let dy = Math.abs(currentNode.col - goalNode.col)
+function  heuristic(currentNode, goalNode, n) {
+  let dx = Math.abs(currentNode.row - goalNode.row)
+  let dy = Math.abs(currentNode.col - goalNode.col)
 
-    return dx+dy
+  switch (n) {
+    case 1: return dx+dy // Manhattan Heuristic
+    case 2: return (dx**2 + dy**2)**0.5 // Euclidean Heuristic
+    case 3: return Math.max(dx,dy) // Chebychev Heuristic
+    case 4:  return dx+dy+(2**0.5-2)*Math.min(dx,dy) // Octile Heuristic
+    default:
+      return dx+dy
+  }
 }
-
-// function heuristic(currentNode, goalNode) {
-//   // allowed diagonal movement
-//   const D = 1
-//   const D2 = 1
-//   let dx = Math.abs(currentNode.row - goalNode.row)
-//   let dy = Math.abs(currentNode.col - goalNode.col)
-//   // When D = 1 and D2 = 1, this is called the Chebyshev distance. 
-//   // When D = 1 and D2 = sqrt(2), this is called the octile distance.
-//   return D * (dx + dy) + (D2 - 2 * D) * Math.min(dx, dy)
-// }
 
 function updateDistanceOfUnvisitedNeighbors(node, grid, goalNode) {
     const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
     // Update heuristic distance of neighbouring nodes.
     for (const neighbor of unvisitedNeighbors) {
-      neighbor.distance = node.distance + 1 + calculate_heuristic(neighbor, goalNode)
+      neighbor.distance = (node.distance + 1) + heuristic(neighbor, goalNode, 4)
       neighbor.previousNode = node;
     }
 
-  }
+}
+
 function isValid(ROW, COL, row, col){
     // If cell lies out of bounds
     if (row < 0 || col < 0
@@ -74,8 +67,9 @@ function getUnvisitedNeighbors(node, grid) {
     const {col, row} = node;
 
      // up, left, down, right
-     const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-     delta.forEach((ele, _) => {
+    const delta = [[-1, 0], [0, -1], [1, 0], [0, 1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+    // const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    delta.forEach((ele, _) => {
        if(isValid(grid.length, grid[0].length, row-ele[0], col-ele[1])) neighbors.push(grid[row-ele[0]][col-ele[1]])
      })
     return neighbors.filter(neighbor => !neighbor.isVisited);

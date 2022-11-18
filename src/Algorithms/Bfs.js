@@ -1,5 +1,5 @@
 export function bfs(grid, startNode, finishNode){
-    const visitedNodesInOrder = []; // we will store the nodes visited in greedy bfs traversal order
+    const visitedNodesInOrder = []; // we will store the nodes visited in  bfs traversal order
     const queue = [startNode]
     const visited = Array.from(Array(grid.length), ()=> Array(grid[0].length).fill(false));
     visited[startNode.row][startNode.col] = true
