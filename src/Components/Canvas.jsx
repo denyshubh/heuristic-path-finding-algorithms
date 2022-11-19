@@ -13,10 +13,10 @@ const Canvas = props => {
         grid: Array(HEIGHT).fill().map(() => Array(WIDTH).fill(0)),
         startPos: [50, 26],
         goalPos: [400,450],
-        track: 0,
-        track2: 0,
-        isMouseDown: false,
     })
+
+    let [track, setTrack] = useState(0)
+    let [track2, setTrack2] = useState(0)
 
     const [treePath, setTreePath] = useState({
 		drawTree: [],
@@ -28,7 +28,9 @@ const Canvas = props => {
         setStartLocationButton : "Set Start Location",
         setGoalLocationButton: "Set Goal Location",
         setObstacleButton: "Set Obstacles ",
-        algoResult: "[View Result]"
+        algoResult: "[View Result]",
+        startCoords: "0 0",
+        goalCoords: "0 0"
     })
 
     const canvasRef = useRef(null)
@@ -90,7 +92,7 @@ const Canvas = props => {
         rect.current = canvas.getBoundingClientRect();
         drawTree(ctx.current, treePath.drawTree)
         drawWaypoint(ctx.current, treePath.drawFinalPath)
-      }, [drawTree, drawWaypoint, redraw])
+      }, [drawTree, drawWaypoint, redraw, canvasRef.current])
 
     const convertCanvasTo2DGrid = () => {
         // convert canvas to 2D array
@@ -127,9 +129,10 @@ const Canvas = props => {
     }
 
     const setStartClick = () => {
-        let {track, startPos, } = obj
+        let { startPos, } = obj
         canvasRef.current.onclick = (e) => {
-            track++;
+            console.log("Track One", track)
+            track+=1;
             if (track === 1){
                 let x = e.clientX - rect.current.left;
                 if (x <= 0 || x >= WIDTH){ x = Math.floor(Math.random() * WIDTH - 1) + 1; }
@@ -141,12 +144,14 @@ const Canvas = props => {
                 startPos[1] = Math.round(y);
 
                 // fill a circle
-                ctx.current.beginPath();           
+                ctx.current.beginPath();                  
                 drawCrosshairs(startPos[0],startPos[1], "yellow", ctx.current);
-                setButtonText({...textObj, setStartLocationButton: `Start Set!`})
+
+                setButtonText({...textObj, setStartLocationButton: `Start Set!`, 
+                startCoords : `${startPos[0]} ${startPos[1]}`, startPos: startPos})
             }
         }
-        setObject({...obj, track: track})
+        setObject({...obj, startPos: startPos})
     }
 
     const handleSetGoalButtonClick = () => {
@@ -160,9 +165,10 @@ const Canvas = props => {
     }
 
     const setGoalClick = () => {
-        let { goalPos, track2, } = obj
+        let { goalPos } = obj
         canvasRef.current.onclick = (e) => {
-            track2++;
+            console.log("Track Two", track2)
+            track2+=1
             if (track2 === 1){
                 let  x = e.clientX - rect.current.left;
                 if (x <= 0 || x >= WIDTH){ x = Math.floor(Math.random() * WIDTH - 1) + 1; }
@@ -174,12 +180,13 @@ const Canvas = props => {
                 goalPos[1] = Math.round(y);
                 // fill a circle
                 ctx.current.beginPath();           
-
+                
                 drawCrosshairs(goalPos[0],goalPos[1], "green", ctx.current);
-                setButtonText({...textObj, setGoalLocationButton: `Goal Set!`})
+                setButtonText({...textObj, setStartLocationButton: `Goal Set!`, 
+                goalCoords : `${goalPos[0]} ${goalPos[1]}`, goalPos: goalPos})
             }
           }
-          setObject({...obj, track2: track2})
+          setObject({...obj, goalPos: goalPos})
     }
 
     const handleSetObstaclesButtonClick = () => {
@@ -224,9 +231,9 @@ const Canvas = props => {
         <Button id="start" variant="outline-success" onClick={() => handleStartButtonClick(props.algo)}> {textObj.startButton} </Button>
         <h3> | </h3>
         <Button id="setStart" variant="outline-primary" onClick={() => handleSetStartButtonClick()}>{textObj.setStartLocationButton}</Button>
-        <h3 id="startCoords">0 0</h3>
+        <h3 id="startCoords">{textObj.startCoords}</h3>
         <Button id="setGoal" variant="outline-danger" onClick={() => handleSetGoalButtonClick()}>{textObj.setGoalLocationButton}</Button>
-        <h3 id="goalCoords">0 0</h3>
+        <h3 id="goalCoords">{textObj.goalCoords}</h3>
         <Button id="setObstacles" variant="outline-secondary" onClick={() => handleSetObstaclesButtonClick()}>{textObj.setObstacleButton}</Button>
         </div>
         <div className="results">
