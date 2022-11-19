@@ -1,5 +1,5 @@
 //tree node class
-export class treeNode{
+class treeNode{
 	constructor(locationX, locationY){
 		this.locationX = locationX;
 		this.locationY = locationY;
@@ -9,7 +9,7 @@ export class treeNode{
 }
 
 //RRT Algorithm class
-export class RRTAlgorithm{
+class RRTAlgorithm{
 	constructor(start, goal, numIterations, grid, stepSize){
 		this.randomTree = new treeNode(start[0], start[1]);			//root position
 		this.goal = new treeNode(goal[0], goal[1]);					//goal position
@@ -27,7 +27,7 @@ export class RRTAlgorithm{
 	
 	//add the node to the nearest node, and add goal if necessary  
 	addChild(locationX, locationY){
-		if (locationX == this.goal.locationX){
+		if (locationX === this.goal.locationX){
 			this.nearestNode.children.push(this.goal);
 			this.goal.parent = this.nearestNode;
 			this.pathFound = true;
@@ -74,7 +74,7 @@ export class RRTAlgorithm{
 			if (testPoint[1] <= 0){
 				testPoint[1] = 0;
 			}			
-			if (this.grid[Math.round(testPoint[1])][Math.round(testPoint[0])] == 1){
+			if (this.grid[Math.round(testPoint[1])][Math.round(testPoint[0])] === 1){
 				return true;
 			}
 		}
@@ -131,7 +131,7 @@ export class RRTAlgorithm{
 
 	//retrace path from goal to start
     retraceRRTPath(goal){
-        if (goal.locationX == this.randomTree.locationX){
+        if (goal.locationX === this.randomTree.locationX){
 			var start = [this.randomTree.locationX, this.randomTree.locationY];
 			this.Waypoints.push(start);
 			this.Waypoints.push(start);
@@ -144,4 +144,49 @@ export class RRTAlgorithm{
         this.retraceRRTPath(goal.parent);
 	}
 
+}
+
+export function getRRTPath(numIterations, grid, stepSize, goalPos, startPos) {
+	
+	const pathTraversed = []
+	const pathToGoalNode = []
+
+    //run the RRT algorithm        
+    const rrt = new RRTAlgorithm(startPos, goalPos, numIterations, grid, stepSize);
+    let counter = 0
+    for (let i = 0; i < rrt.iterations; i++){
+        rrt.resetNearestValues();   // setting nearest node to null and distance to 1000
+
+        const point = rrt.sampleAPoint();   // 
+
+        rrt.findNearest(rrt.randomTree, point);
+
+        const newPt = rrt.steerToPoint(rrt.nearestNode, point);
+
+        const bool = rrt.isInObstacle(rrt.nearestNode, newPt);
+
+        if (bool === false){
+            rrt.addChild(newPt[0], newPt[1]);
+            const begin = [rrt.nearestNode.locationX, rrt.nearestNode.locationY];
+            pathTraversed.push([begin, newPt, i]);
+            //if goal found, append goal to path and break
+            if (rrt.goalFound(newPt) === true){
+                rrt.addChild(goalPos[0],goalPos[1]);
+                rrt.retraceRRTPath(rrt.goal);
+                counter = i;
+                break;
+            }   
+        }
+    }
+
+    if (rrt.pathFound === true){
+        for (let i = 0; i <= rrt.Waypoints.length-2; i++){
+           pathToGoalNode.push([rrt.Waypoints[i], rrt.Waypoints[i+1], i+counter]);
+        }
+    }
+
+	return {
+		drawTree: pathTraversed,
+		drawFinalPath: pathToGoalNode
+	}
 }
