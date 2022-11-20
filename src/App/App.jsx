@@ -15,6 +15,7 @@ function App() {
         <NavBar />
         <Routes>
           <Route path='/rrt' element={<Canvas algo={'rrt'}/>} />
+          <Route path='/rrtstar' element={<Canvas algo={'rrtstar'}/>} />
           <Route path='/astar' element={<PathfindingVisualizer algo={'astar'}/>} />
           <Route path='/bfs' element={<PathfindingVisualizer algo={'bfs'}/>} />
           <Route path='/dfs' element={<PathfindingVisualizer algo={'dfs'}/>} />

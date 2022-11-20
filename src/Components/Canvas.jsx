@@ -1,13 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { Button } from 'react-bootstrap'
 import {getRRTPath} from '../Algorithms/rrt'
-//import {RRTStarAlgorithm} from '../Algorithms/rrtstar'
+import {getRRTStarPath} from '../Algorithms/rrtstar'
 
 const HEIGHT = 650
 const WIDTH = 1800
-const maxNumIterations = 600
-const stepSize = 50
-
 
 const CanvasClickStates = {
   NO_ACTION : "NO_ACTION",
@@ -33,7 +30,8 @@ const Canvas = props => {
 
     const [treePath, setTreePath] = useState({
 		drawTree: [],
-		drawFinalPath: []
+		drawFinalPath: [],
+    tree: null,
 	})
     
     const [textObj, setButtonText] = useState({
@@ -41,7 +39,7 @@ const Canvas = props => {
         setStartLocationButton : "Set Start Location",
         setGoalLocationButton: "Set Goal Location",
         setObstacleButton: "Set Obstacles ",
-        algoResult: "[View Result]",
+        // algoResult: "[View Result]",
         startCoords: "0 0",
         goalCoords: "0 0"
     })
@@ -99,7 +97,6 @@ const Canvas = props => {
         ctx.stroke();  
     }
       
-
     const onCanvasClick = () => {
       if(canvasClickStateRef.current === CanvasClickStates.SET_START) {
         setStartClick();
@@ -111,6 +108,7 @@ const Canvas = props => {
     const onCanvasMouseDown = (event) => {
       isMouseDownRef.current = true;
     }
+    
     const onCanvasMouseUp = (event) => {
       isMouseDownRef.current = false;
     }
@@ -162,13 +160,24 @@ const Canvas = props => {
     }
 
     const handleStartButtonClick = (selectedAlgo) => {
-        convertCanvasTo2DGrid()
-        const {grid, startPos, goalPos} = obj
 
-        setButtonText({...textObj, startButton: `Running: ${selectedAlgo}`})
-
-        const path = getRRTPath(maxNumIterations, grid, stepSize, goalPos, startPos)
-        setTreePath(path)
+      convertCanvasTo2DGrid()
+      
+      const {grid, startPos, goalPos} = obj
+      
+      setButtonText((_oldValue) => ({..._oldValue, startButton: `Running: ${selectedAlgo}`}))
+    
+      let path = null
+      if (selectedAlgo === 'rrt') {
+        const maxNumIterations = 600
+        const stepSize = 50
+        path = getRRTPath(maxNumIterations, grid, stepSize, goalPos, startPos)
+      } else if (selectedAlgo === 'rrtstar') {
+        const maxNumIterations = 1500;
+        const stepSize = 30;
+        path = getRRTStarPath(maxNumIterations, grid, stepSize, goalPos, startPos)
+      }
+      setTreePath(path)
     }
     
     const handleSetStartButtonClick = () => {
@@ -228,7 +237,7 @@ const Canvas = props => {
             setGoalLocationButton: 'Double click grid',
             setObstacleButton: 'Set Obstacles' }))
     }
-
+    
     const setGoalClick = () => {
         let { goalPos } = obj
         canvasRef.current.onclick = (e) => {
@@ -247,6 +256,7 @@ const Canvas = props => {
                 ctx.current.beginPath();           
                 
                 drawCrosshairs(goalPos[0],goalPos[1], "green", ctx.current);
+                drawGoalRegion(ctx.current, goalPos)
 
                 setButtonText((_oldValue)=> ({
                   ..._oldValue, 
@@ -268,19 +278,6 @@ const Canvas = props => {
 
         setButtonText((_oldValue)=> ({ ..._oldValue, setObstacleButton: 'Click once, move mouse, click to stop' }))
     }
-
-    const obstacleDrawClick = () => {
-      debugger;
-        // let {isMouseDown} = obj
-        // console.log(isMouseDown)
-        // canvasRef.current.addEventListener('mousemove', (event) => {
-        
-        // if (isMouseDown) {
-        //     redraw(event.clientX - rect.current.left, event.clientY - rect.current.top, ctx.current);
-        // }});
-        // setObject((oldV)=>({...oldV, isMouseDown: !isMouseDown}))
-
-    }
     
     const drawCrosshairs = (x,y,colorSetting, ctx) => {
         x = Math.floor(x) + 0.5;
@@ -295,7 +292,14 @@ const Canvas = props => {
         
         // Line color
         ctx.strokeStyle = colorSetting;
-        ctx.stroke();    
+        ctx.stroke();
+    }
+
+    const drawGoalRegion = (ctx, goalPos) => {
+      ctx.beginPath();
+      ctx.arc(goalPos[0], goalPos[1], 30, 0, 2 * Math.PI);
+      ctx.strokeStyle = "green";
+      ctx.stroke();
     }
 
     return (
@@ -309,9 +313,9 @@ const Canvas = props => {
         <h3 id="goalCoords">{textObj.goalCoords}</h3>
         <Button id="setObstacles" variant="outline-secondary" onClick={() => handleSetObstaclesButtonClick()}>{textObj.setObstacleButton}</Button>
         </div>
-        <div className="results">
+        {/* <div className="results">
             <h3 id="algoresults">{textObj.algoResult}</h3>
-        </div>
+        </div> */}
         <div className="canvas">
             <canvas
             id="myCanvas"

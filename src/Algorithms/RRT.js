@@ -1,5 +1,5 @@
 //tree node class
-class treeNode{
+export class treeNode{
 	constructor(locationX, locationY){
 		this.locationX = locationX;
 		this.locationY = locationY;
@@ -9,7 +9,7 @@ class treeNode{
 }
 
 //RRT Algorithm class
-class RRTAlgorithm{
+export class RRTAlgorithm{
 	constructor(start, goal, numIterations, grid, stepSize){
 		this.randomTree = new treeNode(start[0], start[1]);			//root position
 		this.goal = new treeNode(goal[0], goal[1]);					//goal position
@@ -187,6 +187,7 @@ export function getRRTPath(numIterations, grid, stepSize, goalPos, startPos) {
 
 	return {
 		drawTree: pathTraversed,
-		drawFinalPath: pathToGoalNode
+		drawFinalPath: pathToGoalNode,
+		tree: rrt,
 	}
 }

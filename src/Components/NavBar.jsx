@@ -12,7 +12,7 @@ function NavBar() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link href="#home">Home</Nav.Link>
-            <Nav.Link href="/rrt">Canvas</Nav.Link>
+            {/* <Nav.Link href="/rrt">Canvas</Nav.Link> */}
             <NavDropdown title="Algorithms" id="select-algo">
               <NavDropdown.Item href="/bfs">Dumb BFS</NavDropdown.Item>
               <NavDropdown.Item href="/dfs">Dumb DFS</NavDropdown.Item>
