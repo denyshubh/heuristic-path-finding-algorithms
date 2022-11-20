@@ -8,12 +8,25 @@ const WIDTH = 1800
 const maxNumIterations = 600
 const stepSize = 50
 
+
+const CanvasClickStates = {
+  NO_ACTION : "NO_ACTION",
+  SET_START : "SET_START",
+  SET_GOAL : "SET_GOAL",
+  DRAW_OBSTACLE : "DRAW_OBSTACLE",
+}
+
 const Canvas = props => {
     const [obj, setObject] = useState({
         grid: Array(HEIGHT).fill().map(() => Array(WIDTH).fill(0)),
         startPos: [50, 26],
         goalPos: [400,450],
     })
+
+    
+    const canvasClickStateRef = useRef(CanvasClickStates.NO_ACTION); 
+    const isMouseDownRef = useRef(false); 
+
 
     let [track, setTrack] = useState(0)
     let [track2, setTrack2] = useState(0)
@@ -86,13 +99,53 @@ const Canvas = props => {
         ctx.stroke();  
     }
       
-      useEffect(() => {
-        const canvas = canvasRef.current
-        ctx.current = canvas.getContext('2d')
-        rect.current = canvas.getBoundingClientRect();
-        drawTree(ctx.current, treePath.drawTree)
-        drawWaypoint(ctx.current, treePath.drawFinalPath)
-      }, [drawTree, drawWaypoint, redraw, canvasRef.current])
+
+    const onCanvasClick = () => {
+      if(canvasClickStateRef.current === CanvasClickStates.SET_START) {
+        setStartClick();
+      }else if(canvasClickStateRef.current === CanvasClickStates.SET_GOAL) {
+        setGoalClick()
+      }
+    }
+
+    const onCanvasMouseDown = (event) => {
+      isMouseDownRef.current = true;
+    }
+    const onCanvasMouseUp = (event) => {
+      isMouseDownRef.current = false;
+    }
+
+    const onCanvasMouseMove = (event) => {
+      if(canvasClickStateRef.current === CanvasClickStates.DRAW_OBSTACLE && isMouseDownRef.current) {
+        redraw(event.clientX - rect.current.left, event.clientY - rect.current.top, ctx.current);
+      }
+    }
+
+    useEffect(()=>{
+      if(canvasRef.current){
+        canvasRef.current.addEventListener("click", onCanvasClick);
+        canvasRef.current.addEventListener("mousedown", onCanvasMouseDown);
+        canvasRef.current.addEventListener("mousemove", onCanvasMouseMove);
+        canvasRef.current.addEventListener("mouseup", onCanvasMouseUp);
+      }
+      
+      return () => {
+        if(canvasRef.current){
+          canvasRef.current.removeEventListener("click", onCanvasClick);
+          canvasRef.current.removeEventListener("mousedown", onCanvasMouseDown);
+          canvasRef.current.removeEventListener("mousemove", onCanvasMouseMove);
+          canvasRef.current.removeEventListener("mouseup", onCanvasMouseUp);
+      }
+      }
+    },[]);
+
+    useEffect(() => {
+      const canvas = canvasRef.current
+      ctx.current = canvas.getContext('2d')
+      rect.current = canvas.getBoundingClientRect();
+      drawTree(ctx.current, treePath.drawTree)
+      drawWaypoint(ctx.current, treePath.drawFinalPath)
+    }, [drawTree, drawWaypoint, redraw, treePath])
 
     const convertCanvasTo2DGrid = () => {
         // convert canvas to 2D array
@@ -119,13 +172,18 @@ const Canvas = props => {
     }
     
     const handleSetStartButtonClick = () => {
-        canvasRef.current.removeEventListener("click",obstacleDrawClick);
-        canvasRef.current.removeEventListener("click", setGoalClick);
-        canvasRef.current.addEventListener("click", setStartClick);
+
+        // canvasRef.current.removeEventListener("click",obstacleDrawClick);
+        // canvasRef.current.removeEventListener("click", setGoalClick);
+        // canvasRef.current.addEventListener("click", setStartClick);
+
+       canvasClickStateRef.current = CanvasClickStates.SET_START;
         
-        setButtonText({...textObj, 
-            setStartLocationButton: 'Double click grid', 
-            setObstacleButton: 'Set Obstacles'})
+       setButtonText((_oldValue)=> ({
+        ..._oldValue, 
+        setStartLocationButton: 'Double click grid', 
+        setObstacleButton: 'Set Obstacles'
+      }))
     }
 
     const setStartClick = () => {
@@ -147,21 +205,28 @@ const Canvas = props => {
                 ctx.current.beginPath();                  
                 drawCrosshairs(startPos[0],startPos[1], "yellow", ctx.current);
 
-                setButtonText({...textObj, setStartLocationButton: `Start Set!`, 
-                startCoords : `${startPos[0]} ${startPos[1]}`, startPos: startPos})
+                setButtonText((_oldValue)=> ({
+                  ..._oldValue, 
+                  setStartLocationButton: `Start Set!`, 
+                 startCoords : `${startPos[0]} ${startPos[1]}`, 
+                 startPos: startPos
+                }))
             }
         }
-        setObject({...obj, startPos: startPos})
+        setObject((oldV)=>({...oldV, startPos: startPos}))
     }
 
     const handleSetGoalButtonClick = () => {
-        canvasRef.current.removeEventListener("click",obstacleDrawClick);
-        canvasRef.current.removeEventListener("click", setStartClick);
-        canvasRef.current.addEventListener("click", setGoalClick);
+        // canvasRef.current.removeEventListener("click",obstacleDrawClick);
+        // canvasRef.current.removeEventListener("click", setStartClick);
+        // canvasRef.current.addEventListener("click", setGoalClick);
 
-        setButtonText({...textObj, 
+        canvasClickStateRef.current = CanvasClickStates.SET_GOAL;
+
+
+        setButtonText((_oldValue)=> ({..._oldValue, 
             setGoalLocationButton: 'Double click grid',
-            setObstacleButton: 'Set Obstacles' })
+            setObstacleButton: 'Set Obstacles' }))
     }
 
     const setGoalClick = () => {
@@ -182,30 +247,38 @@ const Canvas = props => {
                 ctx.current.beginPath();           
                 
                 drawCrosshairs(goalPos[0],goalPos[1], "green", ctx.current);
-                setButtonText({...textObj, setStartLocationButton: `Goal Set!`, 
-                goalCoords : `${goalPos[0]} ${goalPos[1]}`, goalPos: goalPos})
+
+                setButtonText((_oldValue)=> ({
+                  ..._oldValue, 
+                  setStartLocationButton: `Goal Set!`, 
+                  goalCoords : `${goalPos[0]} ${goalPos[1]}`, 
+                  goalPos: goalPos
+                }))
             }
           }
-          setObject({...obj, goalPos: goalPos})
+          setObject((oldV) => ({...oldV, goalPos: goalPos}));
     }
 
     const handleSetObstaclesButtonClick = () => {
-        canvasRef.current.removeEventListener("click", setStartClick);
-        canvasRef.current.removeEventListener("click", setGoalClick);
-        canvasRef.current.addEventListener("click", obstacleDrawClick);
+      canvasClickStateRef.current = CanvasClickStates.DRAW_OBSTACLE;
 
-        setButtonText({...textObj, setObstacleButton: 'Click once, move mouse, click to stop' })
+        // canvasRef.current.removeEventListener("click", setStartClick);
+        // canvasRef.current.removeEventListener("click", setGoalClick);
+        // canvasRef.current.addEventListener("click", obstacleDrawClick);
+
+        setButtonText((_oldValue)=> ({ ..._oldValue, setObstacleButton: 'Click once, move mouse, click to stop' }))
     }
 
     const obstacleDrawClick = () => {
-        let {isMouseDown} = obj
-        console.log(isMouseDown)
-        canvasRef.current.addEventListener('mousemove', (event) => {
+      debugger;
+        // let {isMouseDown} = obj
+        // console.log(isMouseDown)
+        // canvasRef.current.addEventListener('mousemove', (event) => {
         
-        if (isMouseDown) {
-            redraw(event.clientX - rect.current.left, event.clientY - rect.current.top, ctx.current);
-        }});
-        setObject({...obj, isMouseDown: !isMouseDown})
+        // if (isMouseDown) {
+        //     redraw(event.clientX - rect.current.left, event.clientY - rect.current.top, ctx.current);
+        // }});
+        // setObject((oldV)=>({...oldV, isMouseDown: !isMouseDown}))
 
     }
     
