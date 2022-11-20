@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import Node from './Node/Node';
-import {dijkstra, getNodesInShortestPathOrder} from '../Algorithms/Dijkstra';
+import {visualize} from '../Utility/visualize'
 import {getInitialGrid, getNewGridWithWallToggled} from '../Utility/grid'
-
+import {Button} from 'react-bootstrap';
 import '../App/App.css';
 
-const TOTAL_ROWS = 15
-const TOTAL_COLS = 30
+const TOTAL_ROWS = 20
+const TOTAL_COLS = 50
 
 export default class PathfindingVisualizer extends Component {
   constructor() {
@@ -25,7 +25,7 @@ export default class PathfindingVisualizer extends Component {
     const grid = getInitialGrid(TOTAL_ROWS, TOTAL_COLS, this.state.startNode, this.state.finishNode);
     this.setState({grid});
   }
-
+  
   handleMouseDown(row, col) {
     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
     this.setState({grid: newGrid, mouseIsPressed: true});
@@ -52,49 +52,19 @@ export default class PathfindingVisualizer extends Component {
     }
   }
 
-  animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
-    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-      if (i === visitedNodesInOrder.length) {
-        setTimeout(() => {
-          this.animateShortestPath(nodesInShortestPathOrder);
-        }, 10 * i);
-        return;
-      }
-      setTimeout(() => {
-        const node = visitedNodesInOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-visited';
-      }, 10 * i);
-    }
+  handleButtonClick(algo) {
+    if(algo)
+      visualize(algo, this.state)
   }
-
-  animateShortestPath(nodesInShortestPathOrder) {
-    for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
-      setTimeout(() => {
-        const node = nodesInShortestPathOrder[i];
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          'node node-shortest-path';
-      }, 50 * i);
-    }
-  }
-
-  visualizeDijkstra() {
-    const {grid, startNode, finishNode} = this.state;
-    const sNode = grid[startNode[0]][startNode[1]];
-    const fNode = grid[finishNode[0]][finishNode[1]];
-    const visitedNodesInOrder = dijkstra(grid, sNode, fNode);
-    const nodesInShortestPathOrder = getNodesInShortestPathOrder(fNode);
-    this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
-  }
-
   render() {
     const {grid, mouseIsPressed} = this.state;
-
     return (
-      <>
-        <button onClick={() => this.visualizeDijkstra()}>
-          Visualize Dijkstra's Algorithm
-        </button>
+      <div className="App">
+        <Button variant="outline-primary" 
+          onClick={() => this.handleButtonClick(this.props.algo)}>
+            Start
+        </Button>
+      
         <div className="grid">
           {grid.map((row, rowIdx) => {
             return (
@@ -122,7 +92,7 @@ export default class PathfindingVisualizer extends Component {
             );
           })}
         </div>
-      </>
+      </div>
     );
   }
 }
