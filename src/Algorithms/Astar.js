@@ -44,7 +44,7 @@ function updateDistanceOfUnvisitedNeighbors(node, grid, goalNode) {
     const unvisitedNeighbors = getUnvisitedNeighbors(node, grid);
     // Update heuristic distance of neighbouring nodes.
     for (const neighbor of unvisitedNeighbors) {
-      neighbor.distance = (node.distance + 1) + heuristic(neighbor, goalNode, 4)
+      neighbor.distance = (node.distance + 1) + heuristic(neighbor, goalNode, 1)
       neighbor.previousNode = node;
     }
 
@@ -67,8 +67,8 @@ function getUnvisitedNeighbors(node, grid) {
     const {col, row} = node;
 
      // up, left, down, right
-    const delta = [[-1, 0], [0, -1], [1, 0], [0, 1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
-    // const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    //const delta = [[-1, 0], [0, -1], [1, 0], [0, 1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+    const delta = [[-1, 0], [0, -1], [1, 0], [0, 1]]
     delta.forEach((ele, _) => {
        if(isValid(grid.length, grid[0].length, row-ele[0], col-ele[1])) neighbors.push(grid[row-ele[0]][col-ele[1]])
      })

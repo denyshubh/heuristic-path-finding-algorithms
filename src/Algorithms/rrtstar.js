@@ -15,19 +15,21 @@ export class RRTStarAlgorithm extends RRTAlgorithm{
     }
 
     //new method: check if point is in ellipse
-    checkIfInEllipse(pointX, pointY, c_best){
-        const rad_x = c_best/2;
-        const rad_y = Math.sqrt(Math.pow(c_best,2) - Math.pow(this.c_min,2))/2;
-        if ( (((pointX - this.xCenterEllipse)*Math.cos(-this.ellipseAngle) + (pointY - this.yCenterEllipse)*Math.sin(-this.ellipseAngle))**2/rad_x**2 + 
-        ((pointX - this.xCenterEllipse)*Math.sin(-this.ellipseAngle) + (pointY - this.yCenterEllipse)*Math.cos(-this.ellipseAngle))**2/rad_y**2 ) < 1){
-            return true;
-        }
+    checkIfInEllipse(pointX, pointY, bestCost){
+        const rad_x = bestCost/2;
+        const rad_y = Math.sqrt(Math.pow(bestCost,2) - Math.pow(this.c_min,2))/2;
+        
+        const p1 = ((pointX - this.xCenterEllipse)*Math.cos(-this.ellipseAngle) + (pointY - this.yCenterEllipse)*Math.sin(-this.ellipseAngle))
+        const p2 = ((pointX - this.xCenterEllipse)*Math.sin(-this.ellipseAngle) + (pointY - this.yCenterEllipse)*Math.cos(-this.ellipseAngle))
+        
+        if (( p1**2/rad_x**2 + p2**2/rad_y**2 ) < 1) return true;
+        
         return false;          
     }
     
 
-    //add a child (replaces addChild in RRT)
-    addAChild(treeNode){
+    //insert node -> replaces insertNode from RRT
+    insertNode(treeNode){
         if (treeNode.locationX === this.goal.locationX){
             this.nearestNode.children.push(this.goal);
             this.goal.parent = this.nearestNode;
@@ -48,10 +50,10 @@ export class RRTStarAlgorithm extends RRTAlgorithm{
 
     //new method: find neighbouring nodes
     findNeighbouringNodes(root,point){
-		if (!root){
-			return;
-		}
+		if (!root) return 
+
         const dist = this.distance(root, point)
+
         //add to neighbouringNodes if within radius
         if (dist <= this.searchRadius && dist > 0.00001){
             this.neighbouringNodes.push(root);
@@ -106,18 +108,22 @@ export function getRRTStarPath(numIterations, grid, stepSize, goalPos, startPos)
     const rrtStar = new RRTStarAlgorithm(startPos, goalPos, numIterations, grid, stepSize); 
     for (let i = 0; i < rrtStar.iterations; i+=1){
         rrtStar.resetNearestValues();
-        const point = rrtStar.sampleAPoint();
+        const point = rrtStar.sampling();
 
         if (rrtStar.pathFound === true){
-            const c_best = rrtStar.goalCosts[rrtStar.goalCosts.length-1];
-            if (rrtStar.checkIfInEllipse(point[0],point[1],c_best) === false){
+            const bestCost = rrtStar.goalCosts[rrtStar.goalCosts.length-1];
+            // if point doesnot lies in the ellipse space, ignore it and generate new point.
+            if (rrtStar.checkIfInEllipse(point[0],point[1],bestCost) === false){
                 continue;
             }
         }
 
-        rrtStar.findNearest(rrtStar.randomTree, point);
+        rrtStar.findNearestNeighbor(rrtStar.randomTree, point);
+
         const newPt = rrtStar.steerToPoint(rrtStar.nearestNode, point);
-        const bool = rrtStar.isInObstacle(rrtStar.nearestNode, newPt); 
+        const bool = rrtStar.obstacleFree(rrtStar.nearestNode, newPt); 
+
+        // if the point doesn't lie between obstacles
         if (bool === false){
             rrtStar.findNeighbouringNodes(rrtStar.randomTree, newPt);
             let min_cost_node = rrtStar.nearestNode;
@@ -127,7 +133,7 @@ export function getRRTStarPath(numIterations, grid, stepSize, goalPos, startPos)
             for (let i = 0; i < rrtStar.neighbouringNodes.length; i+=1){
                 let vertex_cost = rrtStar.findPathDistance(rrtStar.neighbouringNodes[i]);
                 vertex_cost += rrtStar.distance(rrtStar.neighbouringNodes[i], newPt);
-                if (rrtStar.isInObstacle(rrtStar.neighbouringNodes[i], newPt) === false && vertex_cost < min_cost){
+                if (rrtStar.obstacleFree(rrtStar.neighbouringNodes[i], newPt) === false && vertex_cost < min_cost){
                     min_cost_node = rrtStar.neighbouringNodes[i];
                     min_cost = vertex_cost
                 }
@@ -136,7 +142,7 @@ export function getRRTStarPath(numIterations, grid, stepSize, goalPos, startPos)
             //otherwise it'll add to the original nearest node (obstacle free)                  
             rrtStar.nearestNode = min_cost_node;
             const newNode = new treeNode(newPt[0],newPt[1]);
-            rrtStar.addAChild(newNode); 
+            rrtStar.insertNode(newNode); 
             const begin = [rrtStar.nearestNode.locationX, rrtStar.nearestNode.locationY]; 
             
             pathTraversed.push([begin, newPt, i]);
@@ -145,7 +151,7 @@ export function getRRTStarPath(numIterations, grid, stepSize, goalPos, startPos)
             for (let i = 0; i < rrtStar.neighbouringNodes.length; i+=1){
                 let vertex_cost = min_cost;
                 vertex_cost += rrtStar.distance(rrtStar.neighbouringNodes[i], newPt);
-                if (rrtStar.isInObstacle(rrtStar.neighbouringNodes[i], newPt) === false && vertex_cost < rrtStar.findPathDistance(rrtStar.neighbouringNodes[i])){
+                if (rrtStar.obstacleFree(rrtStar.neighbouringNodes[i], newPt) === false && vertex_cost < rrtStar.findPathDistance(rrtStar.neighbouringNodes[i])){
                     rrtStar.neighbouringNodes[i].parent = newNode;
                 }
             } 
@@ -154,19 +160,16 @@ export function getRRTStarPath(numIterations, grid, stepSize, goalPos, startPos)
             if (rrtStar.goalFound(newPt) === true){
                 const projectedCost = rrtStar.findPathDistance(newNode) + rrtStar.distance(rrtStar.goal, newPt)
                 if (projectedCost < rrtStar.goalCosts[rrtStar.goalCosts.length - 1]){
-                    rrtStar.addAChild(rrtStar.goal);
+                    rrtStar.insertNode(rrtStar.goal);
                     rrtStar.retracePath();
                     const start = [rrtStar.randomTree.locationX, rrtStar.randomTree.locationY];
                     rrtStar.Waypoints.push(start);
                     rrtStar.Waypoints.push(start);
                     counter = i;
-                    const c_best = rrtStar.goalCosts[rrtStar.goalCosts.length - 1];
-                    const rad_x = c_best/2;
-                    const rad_y = Math.sqrt(Math.pow(c_best,2) - Math.pow(rrtStar.c_min,2))/2;        
+                    const bestCost = rrtStar.goalCosts[rrtStar.goalCosts.length - 1];
+                    const rad_x = bestCost/2;
+                    const rad_y = Math.sqrt(Math.pow(bestCost,2) - Math.pow(rrtStar.c_min,2))/2;        
                     ellipse.push([rad_x, rad_y])
-                    // ctx.beginPath(); 
-                    // ctx.ellipse(rrtStar.xCenterEllipse, rrtStar.yCenterEllipse, rad_x, rad_y, rrtStar.ellipseAngle, 0, 2 * Math.PI);
-                    // ctx.stroke();
                 }
             }            
         }
@@ -178,11 +181,7 @@ export function getRRTStarPath(numIterations, grid, stepSize, goalPos, startPos)
         for (let i = 0; i <= rrtStar.Waypoints.length-2; i+=1){
             pathToGoalNode.push([rrtStar.Waypoints[i], rrtStar.Waypoints[i+1], i+counter]);
         }
-        // document.getElementById("algoresults").innerHTML = `Path found! No. Waypoints: ` + rrtStar.numWaypoints.toString() + ` and   ` + ` Distance: ` + rrtStar.goalCosts + `, ` + numRoutes.toString() + ` paths available, displaying shortest calculated path!`;
     }
-    // else{
-    //     // document.getElementById("algoresults").innerHTML = `No path found, max limit of 1500 iterations has been reached, try again!`
-    // }
 
     return {
 		drawTree: pathTraversed,
